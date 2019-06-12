@@ -86,8 +86,6 @@ prepareSampleRoom
   app.listen(config.httpPort);
 
   // Start HTTPS server
-  const cipher = require('./cipher');
-
   try {
     https.createServer({
       cert: fs.readFileSync('cert/cert.pem'),

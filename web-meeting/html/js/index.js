@@ -86,6 +86,17 @@ function login() {
   }
 }
 
+function alertCert(signalingHost) {
+  $('#m-dialog').empty();
+  const anchor = $('<a/>', {
+      text: 'Click this for testing certificate and refresh',
+      target: '_blank',
+      href: `${signalingHost}/socket.io/`
+  });
+  anchor.appendTo($('#m-dialog'));
+  $('#m-dialog').dialog();
+}
+
 function toggleLoginSetting() {
   $('#default-login').slideToggle();
   $('#setting-login').slideToggle();
@@ -318,14 +329,7 @@ function initConference() {
       console.log("server connect failed: " + err);
       if (err.message.indexOf('connect_error:') >= 0) {
         const signalingHost = err.message.replace('connect_error:', '');
-        let $p = $('#titleText');
-        $p.empty();
-        const anchor = $('<a/>', {
-            text: 'Click this for testing certificate and refresh',
-            target: '_blank',
-            href: `${signalingHost}/socket.io/`
-        });
-        anchor.appendTo($p);
+        alertCert(signalingHost);
       }
     });
   });

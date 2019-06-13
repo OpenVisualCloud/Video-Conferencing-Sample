@@ -835,19 +835,7 @@ a {
   cursor: pointer;
 }
 .dialog {
-  position: absolute;
-  box-sizing: border-box;
-  z-index: 200;
-  width: 600px;
-  height: 500px;
-  left: 50%;
-  top: 50%;
-  margin-top: -250px;
-  margin-left: -300px;
-  overflow-: hidden;
   background-color: #eee;
-  border: 3px solid #7BFF7A;
-  display: none;
 }
 .dialog .dialog--title {
   width: 100%;

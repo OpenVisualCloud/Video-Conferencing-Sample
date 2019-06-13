@@ -835,7 +835,9 @@ a {
   cursor: pointer;
 }
 .dialog {
+  padding: 20px;
   background-color: #eee;
+  display: none;
 }
 .dialog .dialog--title {
   width: 100%;

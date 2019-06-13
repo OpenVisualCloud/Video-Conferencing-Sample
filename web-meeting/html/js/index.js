@@ -87,14 +87,24 @@ function login() {
 }
 
 function alertCert(signalingHost) {
-  $('#m-dialog').empty();
+  const $d = $('#m-dialog');
+  $d.empty();
+  const infoText = 'The security certificate of the following url ' +
+    'is not trusted by your computer\'s operating system. ' +
+    'Click the url and ignore the warning, then come back ' +
+    'to this page and refresh if you want to continue.';
+  const info = $('<div/>', {
+    text: infoText
+  });
   const anchor = $('<a/>', {
-      text: 'Click this for testing certificate and refresh',
+      text: `${signalingHost}/socket.io/`,
       target: '_blank',
       href: `${signalingHost}/socket.io/`
   });
-  anchor.appendTo($('#m-dialog'));
-  $('#m-dialog').dialog();
+  info.appendTo($d);
+  anchor.appendTo($d);
+  $d.show();
+  $d.dialog();
 }
 
 function toggleLoginSetting() {

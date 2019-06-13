@@ -1,0 +1,27 @@
+{
+  "name": "oms-sample-conference",
+  "title": "Open WebRTC Toolkit Conference Sample",
+  "description": "Open WebRTC Toolkit JavaScript Conference Sample",
+  "version": "4.2.1",
+  "homepage": "http://webrtc.intel.com",
+  "author": "Intel WebRTC team",
+  "keywords": [
+    "webrtc",
+    "library",
+    "sdk",
+    "gateway",
+    "mcu"
+  ],
+  "scripts": {
+    "start": "node meetingserver.js node > meeting.out 2>&1 </dev/null & echo $! > meeting.pid",
+    "stop": "kill `cat meeting.pid` && rm meeting.pid"
+  },
+  "dependencies": {
+    "express": "",
+    "body-parser": "",
+    "socket.io": "^2.2.0"
+  },
+  "engines": {
+    "node": ">=0.12"
+  }
+}

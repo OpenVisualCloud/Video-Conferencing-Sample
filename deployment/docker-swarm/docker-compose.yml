@@ -1,0 +1,28 @@
+version: '3.1'
+
+networks:
+  hostnet:
+    external:
+      name: host
+
+services:
+    owt-service:
+        image: xeon-ubuntu1804-service-owt:latest
+        restart: always
+        command: sh -c "/home/launch.sh"
+        networks:
+            - hostnet
+        deploy:
+            replicas: 1
+
+
+    owt-web-meeting:
+        image: xeon-ubuntu1804-service-owt-meeting:latest
+        depends_on:
+            - owt-service
+        networks:
+            - hostnet
+        deploy:
+            replicas: 1
+        restart: unless-stopped
+

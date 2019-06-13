@@ -1,0 +1,20 @@
+language: bash
+dist: xenial
+services: docker
+
+addons:
+  apt:
+    packages:
+      - docker-ce
+    update: true
+
+env:
+  - image=xeon-ubuntu1804-service-owt
+  - image=xeon-ubuntu1804-service-owt-meeting
+
+before_install:
+  - docker version
+
+script:
+  - mkdir build && cd build && cmake ..
+  - make 

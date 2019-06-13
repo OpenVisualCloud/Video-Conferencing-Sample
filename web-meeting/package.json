@@ -1,0 +1,20 @@
+{
+  "name": "OWT-MCU-SAMPLE",
+  "version": "4.2.1",
+  "dependencies": {
+    "mongojs": "",
+    "mongoose": "^4.13.6"
+  },
+  "engine": {
+    "node": "8.15.0"
+  },
+  "bin": "server.js",
+  "pkg": {
+    "assets": [
+      "node_modules*"
+    ],
+    "targets": [
+      "node8"
+    ]
+  }
+}

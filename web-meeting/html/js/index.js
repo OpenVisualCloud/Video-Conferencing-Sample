@@ -86,6 +86,27 @@ function login() {
   }
 }
 
+function alertCert(signalingHost) {
+  const $d = $('#m-dialog');
+  $d.empty();
+  const infoText = 'The security certificate of the following url ' +
+    'is not trusted by your computer\'s operating system. ' +
+    'Click the url and ignore the warning, then come back ' +
+    'to this page and refresh if you want to continue.';
+  const info = $('<div/>', {
+    text: infoText
+  });
+  const anchor = $('<a/>', {
+      text: `${signalingHost}/socket.io/`,
+      target: '_blank',
+      href: `${signalingHost}/socket.io/`
+  });
+  info.appendTo($d);
+  anchor.appendTo($d);
+  $d.show();
+  $d.dialog();
+}
+
 function toggleLoginSetting() {
   $('#default-login').slideToggle();
   $('#setting-login').slideToggle();
@@ -318,14 +339,7 @@ function initConference() {
       console.log("server connect failed: " + err);
       if (err.message.indexOf('connect_error:') >= 0) {
         const signalingHost = err.message.replace('connect_error:', '');
-        let $p = $('#titleText');
-        $p.empty();
-        const anchor = $('<a/>', {
-            text: 'Click this for testing certificate and refresh',
-            target: '_blank',
-            href: `${signalingHost}/socket.io/`
-        });
-        anchor.appendTo($p);
+        alertCert(signalingHost);
       }
     });
   });

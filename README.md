@@ -1,5 +1,5 @@
 
-The Video Conferencing Sample implements a web service demo for OWT(Open WebRTC Toolkit) media server, which fully demonstrates OWT features in mix and forward modes. It also provides basic conferencing actions like share screen, instant messaging, mute/unmute audio and video in web UI.
+The Video Conferencing Sample implements a web meeting demo based on OWT(Open WebRTC Toolkit) media server, which fully demonstrates OWT features in mix and forward modes. It also provides basic conferencing actions like screen sharing, instant messaging, and meeting control in web UI.
 
 <img src="web-meeting/html/img/web-sample.jpg" width="800">
 

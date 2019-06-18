@@ -12,10 +12,9 @@ RUN wget ${NODE_REPO} && \
     tar xf node-${NODE_VER}-linux-x64.tar.xz && \
     cp node-*/* /usr/ -rf && rm -rf node-*
 
-COPY ./app_server/* /home/web-meeting/
+COPY ./app-server/ /home/web-meeting/
 
 COPY ./self-sign.sh /home/
-COPY ./html /home/web-meeting/html
 
 
 RUN cd /home/web-meeting && npm install

@@ -91,8 +91,8 @@ function alertCert(signalingHost) {
   $d.empty();
   const infoText = 'The security certificate of the following url ' +
     'is not trusted by your computer\'s operating system. ' +
-    'Click the url and ignore the warning, then come back ' +
-    'to this page and refresh if you want to continue.';
+    'If you confirm to continue, click the url and ignore the warning, then come back ' +
+    'to this page and refresh.';
   const info = $('<div/>', {
     text: infoText
   });
@@ -1322,7 +1322,7 @@ function pauseVideo() {
 
   if (!isPauseVideo) {
     //TODO: pause all video?
-    // remoteMixedSub.mute(Owt.Base.TrackKind.VIDEO);
+     //remoteMixedSub.mute(Owt.Base.TrackKind.VIDEO);
     for (var temp in subList) {
       if (subList[temp] === screenSub) {
         continue;
@@ -1348,7 +1348,7 @@ function pauseVideo() {
   } else {
     $('[ismix=true]').children('.video').css('display', 'block');
     $('[ismix=true]').children('.pause').css('display', 'none');
-    // remoteMixedSub.unmute(Owt.Base.TrackKind.VIDEO);
+     //remoteMixedSub.unmute(Owt.Base.TrackKind.VIDEO);
     for (var temp in subList) {
       if (subList[temp] === screenSub) {
         continue;

@@ -359,15 +359,28 @@ function monitor(subscription){
           packetsRcvd = parseInt(value.packetsReceived);
           bitsRcvd = parseInt(value.bytesReceived);
           bitRate = ((bitsRcvd-bits)*8/1000/1000).toFixed(3);
+          lostRate = (packetsLost-lost) / (packetsRcvd-rcvd);
+
+
           $('#rcvd').html(packetsRcvd);
-          $('#lost').html(packetsLost);
+          $('#lost').html(lostRate);
           $('#bitRate').html(bitRate);
           $('#codec').html(report.get(value.codecId).mimeType.split('/')[1]);
-          lostRate = (packetsLost-lost) / (packetsRcvd-rcvd);
+          
           lost = packetsLost;
           rcvd = packetsRcvd;
           bits = bitsRcvd;
-          level = parseInt(bitRate/0.2);
+
+          var lostRateNum = parseInt(lostRate*100);
+          if(lostRateNum <2) {
+            level = 4;
+          } else if(lostRateNum <5) {
+            level = 3;
+          } else if(lostRateNum <10) {
+            level = 2;
+          } else {
+            level = 1;
+          }
         }
         if(key.indexOf('RTCIceCandidatePair') != -1) {
           $('#bandwidth').html((parseInt(value.availableIncomingBitrate)/1024/1024).toFixed(3));
@@ -386,7 +399,7 @@ function monitor(subscription){
       current--;
       $('#wifi'+current).css('display', 'block').siblings().css('display', 'none');
     }
-    if ((lostRate >= 0.12 || level < 2) && !isPauseVideo) {
+    if ((level < 2) && !isPauseVideo) {
       if(bad < 8){
         bad++;
       }
@@ -649,10 +662,12 @@ function getNextSize() {
 
 function addVideo(stream, isLocal) {
   // compute next html id
-  var id = $('#video-panel').children('.client').length;
-  while ($('#client-' + id).length > 0) {
-    ++id;
-  }
+  //var id = $('#video-panel').children('.client').length;
+  var id = stream.id;
+  console.log("addVideo video panel client length:", id);
+  //while ($('#client-' + id).length > 0) {
+    //++id;
+  //}
   var uid = stream.origin;
   if (isLocal) {
     console.log("localStream addVideo1");
@@ -1186,7 +1201,7 @@ function resizeStream(newMode) {
           left: hasLeft ? -(4 / 3 * height / 2 - width / 2) + "px" : "0px"
         });
       }
-      if (element.attr('ismix') === 'true') {
+      if (element.attr('isMix') === 'true') {
         $('#wifi').css('bottom', (height + scaleLevel * width)/2 < height ? (height + scaleLevel * width)/2 + 58 + 'px' : height + 58 + 'px');
       }
     }

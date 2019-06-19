@@ -363,7 +363,7 @@ function monitor(subscription){
 
 
           $('#rcvd').html(packetsRcvd);
-          $('#lost').html(lostRate);
+          $('#lost').html(packetsLost);
           $('#bitRate').html(bitRate);
           $('#codec').html(report.get(value.codecId).mimeType.split('/')[1]);
           

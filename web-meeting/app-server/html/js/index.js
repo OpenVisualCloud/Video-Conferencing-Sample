@@ -332,6 +332,10 @@ function initConference() {
           let isMixStream = (stream.source.audio === 'mixed');
           if ((subscribeType === SUBSCRIBETYPES.FORWARD && !isMixStream) ||
               (subscribeType === SUBSCRIBETYPES.MIX && isMixStream)) {
+            stream.addEventListener('ended', function(event) {
+              console.log("====stream ended:", stream.id);
+              $('#client-' + stream.id).remove();
+            });
             subscribeStream(stream); 
           }
         }
@@ -492,8 +496,8 @@ function addRoomEventListener() {
           });
         } else {
           stream.addEventListener('ended', function(event) {
-            console.log(getUserFromId(stream.origin).htmlId);
-            $('#client-' + getUserFromId(stream.origin).htmlId).remove();
+            console.log("====stream ended:", stream.id);
+            $('#client-' + stream.id).remove();
           });
         }
         addVideo(stream, false);

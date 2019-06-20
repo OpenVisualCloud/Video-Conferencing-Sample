@@ -1,7 +1,7 @@
 
-The Video Conferencing Sample implements a web meeting demo based on OWT(Open WebRTC Toolkit) media server, which fully demonstrates OWT features in mix and forward modes. It also provides basic conferencing actions like screen sharing, instant messaging, and meeting control in web UI.
+The video conferencing sample implements a web meeting demo based on Open WebRTC Toolkit (OWT) media server and client SDK, which fully demonstrates OWT media processing features in both mix and forward modes. It also provides basic conferencing actions like screen sharing, instant messaging, and meeting control in web UI.
 
-<img src="web-meeting/html/img/web-sample.jpg" width="800">
+<img src="web-meeting/app-server/html/img/web-sample.jpg" width="800">
 
 ### Install docker engine:        
 

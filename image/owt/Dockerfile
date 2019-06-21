@@ -194,7 +194,7 @@ RUN apt-get update && apt-get install -y -q --no-install-recommends python libgl
 # 3. Clone webrtc source code and patch
 RUN git config --global user.email "you@example.com" && \
     git config --global user.name "Your Name" && \
-    git clone ${OWTSERVER_REPO} && \
+    git clone -b ${OWT_BRANCH} ${OWTSERVER_REPO} && \
 
     # Install node modules for owt
     npm install -g --loglevel error node-gyp grunt-cli underscore jsdoc && \
@@ -229,7 +229,7 @@ RUN git config --global user.email "you@example.com" && \
     ./src/tools-woogeen/build.sh && \
 
     # Get js client sdk for owt
-    cd /home && git clone ${OWT_SDK_REPO} && cd owt-client-javascript/scripts && npm install && grunt  && \
+    cd /home && git clone -b ${OWT_BRANCH} ${OWT_SDK_REPO} && cd owt-client-javascript/scripts && npm install && grunt  && \
     mkdir ${SERVER_PATH}/third_party/quic-lib && \
     cd ${SERVER_PATH}/third_party/quic-lib && wget https://github.com/open-webrtc-toolkit/owt-deps-quic/releases/download/v0.1/dist.tgz && tar xzf dist.tgz && \
 

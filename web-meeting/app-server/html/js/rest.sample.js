@@ -82,3 +82,58 @@ var createToken = function (room, user, role, callback, host) {
         send('POST', '/createToken/', body, callback, host);
     }
 };
+
+var getStreams = function (room, callback, host) {
+    var resCb = function(result) {
+        if (result) {
+            try {
+                callback(JSON.parse(result));
+            } catch (e) {
+                callback(null);
+            }
+        } else {
+            callback(null);
+        }
+    };
+    send('GET', '/rooms/' + room + '/streams/', undefined, resCb, host);
+};
+
+var pauseStream = function (room, stream, track, callback, host) {
+    var jsonPatch = [];
+    if (track === 'audio' || track === 'av') {
+        jsonPatch.push({
+            op: 'replace',
+            path: '/media/audio/status',
+            value: 'inactive'
+        });
+    }
+
+    if (track === 'video' || track === 'av') {
+        jsonPatch.push({
+            op: 'replace',
+            path: '/media/video/status',
+            value: 'inactive'
+        });
+    }
+    send('PATCH', '/rooms/' + room + '/streams/' + stream, jsonPatch, callback, host);
+};
+
+var playStream = function (room, stream, track, callback, host) {
+    var jsonPatch = [];
+    if (track === 'audio' || track === 'av') {
+        jsonPatch.push({
+            op: 'replace',
+            path: '/media/audio/status',
+            value: 'active'
+        });
+    }
+
+    if (track === 'video' || track === 'av') {
+        jsonPatch.push({
+            op: 'replace',
+            path: '/media/video/status',
+            value: 'active'
+        });
+    }
+    send('PATCH', '/rooms/' + room + '/streams/' + stream, jsonPatch, callback, host);
+};

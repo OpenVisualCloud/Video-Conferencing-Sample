@@ -799,8 +799,10 @@ function addVideo(stream, isLocal) {
     var resize = size === 'large' ? 'shrink' : 'enlarge';
     if (stream.source.video === 'mixed'){
       var name = "Mix Stream";
+      $('#video-panel .largest').removeClass("largest");
+      $("#client-" + id).addClass("largest");
     }else {
-    var name = (stream === localStream) ? localName : getUserFromId(stream.origin).userId || {};
+      var name = (stream === localStream) ? localName : getUserFromId(stream.origin).userId || {};
     }
     var muteBtn = "";
 

@@ -40,6 +40,7 @@ var isAudioOnly = false;
 var showInfo = null;
 var showLevel = null;
 var scaleLevel = 3/4;
+var refreshMute = null;
 
 var currentRegions = null;
 
@@ -54,6 +55,9 @@ var screenSub = null;
 
 var room = null;
 var roomId = null;
+
+const remoteStreamMap = new Map();
+const forwardStreamMap = new Map();
 
 function htmlEncode(str) {
   var s = "";
@@ -147,6 +151,28 @@ function stopAllStream() {
   for (var temp in streamObj) {
     streamObj[temp].close();
   }
+}
+
+function processRemoteStream(stream) {
+  remoteStreamMap.set(stream.id, stream);
+  let enedListener = (event) => {
+    console.log(`remote stream ${stream.id} is ended`);
+    remoteStreamMap.delete(stream.id);
+    // destroyStreamUi(stream);
+  };
+  let activeaudioinputchangeListener = (event) => {
+    console.log('activeaudioinputchange event triggered: ', event);
+  };
+  let layoutchangeListener = (event) => {
+    console.log('layoutchange event triggered: ', event);
+  };
+  let update = (event) => {
+    console.log('streamupdate event triggered: ', event, stream.id);
+  }
+  stream.addEventListener('ended', enedListener);
+  stream.addEventListener('activeaudioinputchange', activeaudioinputchangeListener);
+  stream.addEventListener('layoutchange', layoutchangeListener);
+  stream.addEventListener('update', update);
 }
 
 function initConference() {
@@ -339,6 +365,8 @@ function initConference() {
             subscribeStream(stream); 
           }
         }
+
+        refreshMuteState();
     }, err => {
       console.log("server connect failed: " + err);
       if (err.message.indexOf('connect_error:') >= 0) {
@@ -347,6 +375,25 @@ function initConference() {
       }
     });
   });
+}
+
+function refreshMuteState() {
+  refreshMute = setInterval(() => {
+    getStreams(roomId, (streams) => {
+      forwardStreamMap.clear();
+      for (const stream of streams) {
+        // console.log(stream);
+        if (stream.type === 'forward') {
+          forwardStreamMap.set(stream.id, stream);
+          if (stream.media.audio) {
+            const clientId = stream.info.owner;
+            const muted = (stream.media.audio.status === 'inactive');
+            chgMutePic(clientId, muted);
+          }
+        }
+      }
+    });
+  }, 1000);
 }
 
 function monitor(subscription){
@@ -455,16 +502,25 @@ function addRoomEventListener() {
   room.addEventListener('streamadded', (streamEvent) => {
     console.log('streamadded', streamEvent);
     var stream = streamEvent.stream;
-    if (subscribeType === SUBSCRIBETYPES.FORWARD && (stream.source.audio === 'mixed' && stream.source.video === 'mixed')) {
-      return;
-    } else if (subscribeType === SUBSCRIBETYPES.MIX && (!(stream.source.audio === 'mixed' && stream.source.video === 'mixed') 
-    && !( stream.source.video === 'screen-cast'))) {
-      return;
-    } else if (stream.source.video === 'screen-cast' && isLocalScreenSharing) {
+
+    if (localStream && localStream.id === stream.id) {
       return;
     }
-    if (localStream != null && stream.id == localStream.id ) {
-      return;
+    if (stream.source.audio === 'mixed' && stream.source.video === 'mixed') {
+      if (subscribeType !== SUBSCRIBETYPES.MIX) {
+        return;
+      }
+      // subscribe mix stream
+      thatName = "MIX Stream";
+    } else {
+      if (stream.source.video === 'screen-cast') {
+        thatName = "Screen Sharing";
+        if (isLocalScreenSharing) {
+          return;
+        }
+      } else if (subscribeType !== SUBSCRIBETYPES.FORWARD) {
+        return;
+      }
     }
 
     var thatId = stream.id;
@@ -1508,18 +1564,18 @@ $(document).ready(function() {
   //TODO:mute others
   $(document).on('dblclick', '.muteShow', function() {
     // mute others
-    var mutedID = $(this).siblings('.userID').text();
+    var muteId = $(this).siblings('.userID').text();
     var msg = {
       type: "force",
     };
-    room.send(JSON.stringify(msg),mutedID).then(() => {
-      if ($(this).attr('isMuted')) {
-        $("#msgText").text("You have unmuted " + getUserFromId(mutedID).userId);
-      } else {
-        $("#msgText").text("You have muted " + getUserFromId(mutedID).userId);
+    forwardStreamMap.forEach((stream, key) => {
+      if (stream.info.owner === muteId && stream.media.audio) {
+        if (stream.media.audio.status === 'active') {
+          pauseStream(roomId, stream.id, 'audio', () => chgMutePic(muteId, true));
+        } else {
+          playStream(roomId, stream.id, 'audio', () => chgMutePic(muteId, false));
+        }
       }
-    },err => {
-      console.error("force to mute " + getUserFromId(mutedID).userId + "failed");
     });
   });
 

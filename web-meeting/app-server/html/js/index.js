@@ -31,7 +31,6 @@ var streamObj = {};
 var streamIndices = {};
 var hasMixed = false;
 var isSmall = false;
-var singleMute = true;
 var isPauseAudio = true;
 var isPauseVideo = false;
 var isOriginal = true;
@@ -141,8 +140,6 @@ function userExit() {
   $("#login-panel").removeClass("pulse").show();
   $("#user-list").html('');
   localStream = undefined;
-  isPauseAudio = true;
-  singleMute = true;
   clearInterval(showInfo);
   clearInterval(showLevel);
 }
@@ -239,12 +236,10 @@ function initConference() {
         $('#text-send,#send-btn').show();
         room.publish(localStream).then(publication => {
           localPublication = publication;
-          localPublication.mute(Owt.Base.TrackKind.AUDIO).then(
-            () => {
-              console.info('mute success');
-            }, err => {
-              console.error('mute failed');
-          });
+          isPauseAudio = false;
+          pauseAudio();
+          isPauseVideo = true;
+          pauseVideo();
           mixStream(roomId,localPublication.id,'common');
           console.info('publish success');
           streamObj[localStream.id] = localStream;

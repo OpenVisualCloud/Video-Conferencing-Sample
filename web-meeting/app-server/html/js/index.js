@@ -708,6 +708,7 @@ function addVideo(stream, isLocal) {
     $('#local-screen').remove();
     changeMode(MODES.LECTURE, !isLocalScreenSharing);
     streamObj["screen"] = stream;
+    $('#screen-btn').addClass('disabled');
 
   } else {
     // append to global users
@@ -822,6 +823,9 @@ function addVideo(stream, isLocal) {
     stream.addEventListener('ended', function(event) {
       console.log("====stream ended:", stream.id);
       $('#client-' + stream.id).remove();
+      if (stream.source.video === 'screen-cast') {
+        $('#screen-btn').removeClass('disabled');
+      }
     });
     relocate($('#client-' + id));
     changeMode(mode);

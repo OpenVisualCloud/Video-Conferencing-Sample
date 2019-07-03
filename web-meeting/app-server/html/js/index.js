@@ -237,9 +237,9 @@ function initConference() {
         room.publish(localStream).then(publication => {
           localPublication = publication;
           isPauseAudio = false;
-          pauseAudio();
+          toggleAudio();
           isPauseVideo = true;
-          pauseVideo();
+          toggleVideo();
           mixStream(roomId,localPublication.id,'common');
           console.info('publish success');
           streamObj[localStream.id] = localStream;
@@ -1387,7 +1387,7 @@ function playpause() {
   }
 }
 
-function pauseVideo() {
+function toggleVideo() {
   if (!localPublication) {
     return;
   }
@@ -1443,7 +1443,7 @@ function pauseVideo() {
   }
 }
 
-function pauseAudio() {
+function toggleAudio() {
   if (!localPublication) {
     return;
   }
@@ -1500,11 +1500,11 @@ $(document).ready(function() {
   }
 
   $(document).on('click', '#pauseVideo', function() {
-    pauseVideo();
+    toggleVideo();
   });
 
   $(document).on('click', '#pauseAudio', function() {
-    pauseAudio();
+    toggleAudio();
   });
 
   $(document).on('click', '.original', function() {

@@ -172,6 +172,54 @@ function processRemoteStream(stream) {
   stream.addEventListener('update', update);
 }
 
+function subscribeStream(stream) {
+  console.info('subscribing:', stream.id);
+  var videoOption = !isAudioOnly;
+  room.subscribe(stream).then(subscription => {
+    console.info('subscribed: ',subscription.id);
+    addVideo(stream, false);
+    subList[subscription.id] = subscription;
+    console.info("add success");
+    streamObj[stream.id] = stream;
+    if(stream.source.video === 'mixed'){
+      remoteMixedSub = subscription;
+    }
+    if(stream.source.video === 'screen-cast'){
+      screenSub = subscription;
+      stream.addEventListener('ended', function(event) {
+        changeMode(MODES.LECTURE);
+        setTimeout(function() {
+          $('#local-screen').remove();
+          $('#screen').remove();
+          shareScreenChanged(false, false);
+          if (subscribeType === SUBSCRIBETYPES.MIX) {
+            changeMode(mode, $("div[isMix=true]"));
+          } else {
+            changeMode(mode);
+          }
+        }, 800);
+      });
+    }
+    setTimeout(function() {
+      subscription.getStats().then( report => {
+        console.info(report);
+        report.forEach(function(item,index){
+          if(item.type === 'ssrc' && item.mediaType === 'video'){
+            scaleLevel = parseInt(item.googFrameHeightReceived)/parseInt(item.googFrameWidthReceived);
+            console.info(scaleLevel);
+          }
+        });
+        resizeStream(mode);
+      }, err => {
+        console.error('stats error: ' + err);
+      });
+    }, 1000);
+    monitor(subscription);
+  }, err => {
+    console.error('subscribe error: ' + err);
+  });
+}
+
 function initConference() {
   if ($('#subscribe-type').val() === 'mixed') {
     subscribeType = SUBSCRIBETYPES.MIX;
@@ -259,60 +307,6 @@ function initConference() {
       });
   }
 
-  function subscribeStream(stream) {
-    console.info('subscribing:', stream.id);
-    var videoOption = !isAudioOnly;
-    if (stream.source.audio === 'screen-cast' &&
-        stream.source.video === 'screen-cast') {
-      videoOption = false;
-    }
-    room.subscribe(stream,{
-      video: videoOption
-    }).then(subscription => {
-      console.info('subscribed: ',subscription.id);
-      addVideo(stream, false);
-      subList[subscription.id] = subscription;
-      console.info("add success");
-      streamObj[stream.id] = stream;
-      if(stream.source.video === 'mixed'){
-        remoteMixedSub = subscription;
-      }
-      if(stream.source.video === 'screen-cast'){
-        screenSub = subscription;
-        stream.addEventListener('ended', function(event) {
-          changeMode(MODES.LECTURE);
-          setTimeout(function() {
-            $('#local-screen').remove();
-            $('#screen').remove();
-            shareScreenChanged(false, false);
-            if (subscribeType === SUBSCRIBETYPES.MIX) {
-              changeMode(mode, $("div[isMix=true]"));
-            } else {
-              changeMode(mode);
-            }
-          }, 800);
-        });
-      }
-      setTimeout(function() {
-        subscription.getStats().then( report => {
-          console.info(report);
-          report.forEach(function(item,index){
-            if(item.type === 'ssrc' && item.mediaType === 'video'){
-              scaleLevel = parseInt(item.googFrameHeightReceived)/parseInt(item.googFrameWidthReceived);
-              console.info(scaleLevel);
-            }
-          });
-          resizeStream(mode);
-        }, err => {
-          console.error('stats error: ' + err);
-        });
-      }, 1000);
-      monitor(subscription);
-    }, err => {
-      console.error('subscribe error: ' + err);
-    });
-  }
-
   createToken(roomId, localName, 'presenter', function(response) {
     var token = response;
     if (!room) {
@@ -352,11 +346,8 @@ function initConference() {
 
           let isMixStream = (stream.source.audio === 'mixed');
           if ((subscribeType === SUBSCRIBETYPES.FORWARD && !isMixStream) ||
-              (subscribeType === SUBSCRIBETYPES.MIX && isMixStream)) {
-            stream.addEventListener('ended', function(event) {
-              console.log("====stream ended:", stream.id);
-              $('#client-' + stream.id).remove();
-            });
+              (subscribeType === SUBSCRIBETYPES.MIX && isMixStream) ||
+              (stream.source.video === 'screen-cast')) {
             subscribeStream(stream); 
           }
         }
@@ -527,36 +518,7 @@ function addRoomEventListener() {
 
     // add video of non-local streams
     if (localId !== thatId && localScreenId !== thatId && localName !== getUserFromId(stream.origin).userId) {
-      var videoOption = (stream.source.video === 'screen-cast') ? true : !isAudioOnly;
-      room.subscribe(stream).then(subscription => {
-        console.info('a new subscribed: ',subscription.id);
-        if(stream.source.video === 'screen-cast'){
-          screenSub = subscription;
-          stream.addEventListener('ended', function(event) {
-            changeMode(MODES.LECTURE);
-            setTimeout(function() {
-              $('#local-screen').remove();
-              $('#screen').remove();
-              shareScreenChanged(false, false);
-              if (subscribeType === SUBSCRIBETYPES.MIX) {
-                changeMode(mode, $("div[isMix=true]"));
-              } else {
-                changeMode(mode);
-              }
-            }, 800);
-          });
-        } else {
-          stream.addEventListener('ended', function(event) {
-            console.log("====stream ended:", stream.id);
-            $('#client-' + stream.id).remove();
-          });
-        }
-        addVideo(stream, false);
-        subList[subscription.id] = subscription;
-        streamObj[stream.id] = stream;
-      }, err => {
-        console.error('subscribe error: ' + err);
-      });
+      subscribeStream(stream);
     }
   });
 
@@ -857,6 +819,10 @@ function addVideo(stream, isLocal) {
         '<a href="#" class="ctrl-btn fullscreen"></a>' + muteBtn + '</div>')
       .append('<div class="ctrl-name">' + name + '</div>').append(
         "<div class='noCamera'></div>");
+    stream.addEventListener('ended', function(event) {
+      console.log("====stream ended:", stream.id);
+      $('#client-' + stream.id).remove();
+    });
     relocate($('#client-' + id));
     changeMode(mode);
   }

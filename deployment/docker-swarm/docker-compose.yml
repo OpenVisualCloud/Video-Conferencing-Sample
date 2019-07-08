@@ -9,7 +9,7 @@ services:
     owt-service:
         image: xeon-ubuntu1804-service-owt:latest
         restart: always
-        command: sh -c "/home/launch.sh"
+        command: sh -c "chmod +x /home/start.sh && /home/start.sh"
         networks:
             - hostnet
         deploy:

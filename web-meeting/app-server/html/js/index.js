@@ -175,7 +175,7 @@ function processRemoteStream(stream) {
 function subscribeStream(stream) {
   console.info('subscribing:', stream.id);
   var videoOption = !isAudioOnly;
-  room.subscribe(stream).then(subscription => {
+  room.subscribe(stream, {video: videoOption}).then(subscription => {
     console.info('subscribed: ',subscription.id);
     addVideo(stream, false);
     subList[subscription.id] = subscription;

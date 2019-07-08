@@ -140,8 +140,8 @@ function userExit() {
   $("#login-panel").removeClass("pulse").show();
   $("#user-list").html('');
   localStream = undefined;
-  clearInterval(showInfo);
-  clearInterval(showLevel);
+  // clearInterval(showInfo);
+  // clearInterval(showLevel);
 }
 
 function stopAllStream() {
@@ -214,7 +214,7 @@ function subscribeStream(stream) {
         console.error('stats error: ' + err);
       });
     }, 1000);
-    monitor(subscription);
+    // monitor(subscription);
   }, err => {
     console.error('subscribe error: ' + err);
   });
@@ -783,8 +783,8 @@ function addVideo(stream, isLocal) {
               console.info('subscribed:', streamId);
               $('#video-' + id).attr("src", streamObj[streamId].createObjectURL());
               $('#video-' + id).attr("stream", streamId);
-              stopMonitor();
-              monitor(streamObj[streamId]);
+              // stopMonitor();
+              // monitor(streamObj[streamId]);
             }, function(err) {
               console.error(streamId, 'subscribe failed:', err);
             });
@@ -798,8 +798,8 @@ function addVideo(stream, isLocal) {
             stream.signalOnPlayAudio();
             $('#video-' + id).attr("src", stream.createObjectURL());
             $('#video-' + id).attr("stream", "mix");
-            stopMonitor();
-            monitor(stream);
+            // stopMonitor();
+            // monitor(stream);
             room.unsubscribe(forward, function(et) {
               console.info(forward.id(), 'unsubscribe stream');
             }, function(err) {
@@ -1152,7 +1152,7 @@ function changeMode(newMode, enlargeElement) {
       $('#video-panel').removeClass('galaxy lecture')
         .addClass('monitor');
       $('.shrink').removeClass('shrink').addClass('enlarge');
-      updateMonitor();
+      // updateMonitor();
       break;
 
     case MODES.LECTURE:

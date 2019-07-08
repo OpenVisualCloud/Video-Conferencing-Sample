@@ -784,7 +784,7 @@ function addVideo(stream, isLocal) {
               $('#video-' + id).attr("src", streamObj[streamId].createObjectURL());
               $('#video-' + id).attr("stream", streamId);
               // stopMonitor();
-              monitor(streamObj[streamId]);
+              // monitor(streamObj[streamId]);
             }, function(err) {
               console.error(streamId, 'subscribe failed:', err);
             });
@@ -799,7 +799,7 @@ function addVideo(stream, isLocal) {
             $('#video-' + id).attr("src", stream.createObjectURL());
             $('#video-' + id).attr("stream", "mix");
             // stopMonitor();
-            monitor(stream);
+            // monitor(stream);
             room.unsubscribe(forward, function(et) {
               console.info(forward.id(), 'unsubscribe stream');
             }, function(err) {
@@ -1152,7 +1152,7 @@ function changeMode(newMode, enlargeElement) {
       $('#video-panel').removeClass('galaxy lecture')
         .addClass('monitor');
       $('.shrink').removeClass('shrink').addClass('enlarge');
-      updateMonitor();
+      // updateMonitor();
       break;
 
     case MODES.LECTURE:

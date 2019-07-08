@@ -127,6 +127,7 @@ function userExit() {
     localScreen.mediaStream.getTracks().forEach(track => {
       track.stop();
     });
+    $('#screen-btn').removeClass('disabled');
   }
   room.leave();
 

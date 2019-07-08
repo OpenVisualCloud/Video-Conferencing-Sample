@@ -58,24 +58,11 @@ var roomId = null;
 const remoteStreamMap = new Map();
 const forwardStreamMap = new Map();
 
-function htmlEncode(str) {
-  var s = "";
-  if (str.length === 0) return "";
-  s = str.replace(/&/g, "&#38;");
-  s = s.replace(/</g, "&#60;");
-  s = s.replace(/>/g, "&#62;");
-  s = s.replace(/ /g, "&#160;");
-  s = s.replace(/\'/g, "&#39;");
-  s = s.replace(/\"/g, "&#34;");
-  return s;
-}
-
 function login() {
-  var inputName = $('#login-input').val();
-  if (inputName !== '') {
-    localName = htmlEncode(inputName);
+  const value = $('#login-input').val();
+  if (value !== '') {
+    localName = $('<textarea/>').text(value).html();
     $('#login-panel').addClass('pulse');
-
     $('#login-panel').hide();
     $('#container').show();
     if(navigator.webkitGetUserMedia){
@@ -131,23 +118,31 @@ function exit() {
 }
 
 function userExit() {
+  if (localStream) {
+    localStream.mediaStream.getTracks().forEach(track => {
+      track.stop();
+    });
+  }
+  if (localScreen) {
+    localScreen.mediaStream.getTracks().forEach(track => {
+      track.stop();
+    });
+  }
   room.leave();
+
   users = [];
+  subList = {};
+  streamObj = {};
+  streamIndices = {};
   $("#video-panel div[id^=client-]").remove();
   $("#localScreen").remove();
   $("#screen").remove();
   $("#container").hide();
   $("#login-panel").removeClass("pulse").show();
-  $("#user-list").html('');
+  $("#user-list").empty();
+  $('#video-panel').empty();
   localStream = undefined;
-  // clearInterval(showInfo);
-  // clearInterval(showLevel);
-}
-
-function stopAllStream() {
-  for (var temp in streamObj) {
-    streamObj[temp].close();
-  }
+  clearInterval(refreshMute);
 }
 
 function processRemoteStream(stream) {

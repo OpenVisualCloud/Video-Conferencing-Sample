@@ -1,0 +1,21 @@
+{
+    "name": "WebRTC PWA sample",
+    "short_name": "webrtc pwa",
+    "start_url": "/index.html",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "/pwa/icons/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "images/png"
+        },
+        {
+            "src": "/pwa/icons/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "theme_color": "#ffee00",
+    "background_color": "#ffee00",
+    "display": "standalone"
+}

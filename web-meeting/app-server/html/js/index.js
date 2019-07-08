@@ -81,7 +81,7 @@ function alertCert(signalingHost) {
   $d.empty();
   const infoText = 'The security certificate of the following url ' +
     'is not trusted by your computer\'s operating system. ' +
-    'If you confirm to continue, click the url and ignore the warning, then come back ' +
+    'If you confirm to continue, click the url and proceed to the unsafe host, then come back' +
     'to this page and refresh.';
   const info = $('<div/>', {
     text: infoText

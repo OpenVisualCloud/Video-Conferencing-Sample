@@ -8,10 +8,22 @@ do
     sleep 1
 done
 
+
 if [ -n "$1" ]; then
-echo $1
-externalip=$1
-repacestr="network_interfaces = [{name = \"eth0\", replaced_ip_address = \"${externalip}\"}]"
+
+# format the parameters
+set -- $(getopt -u -l ip:,eth:,openh264:,network_interface:: -- -- "$@")
+# get the parameters
+while [ -n "$1" ]
+do
+    case "$1" in
+        --ip ) externalip=$2; shift; shift ;;
+        --eth ) eth=$2; shift; shift ;;
+        * ) break;;
+    esac
+done
+
+repacestr="network_interfaces = [{name = \"${eth}\", replaced_ip_address = \"${externalip}\"}]"
 
 sed -i "s/network_interfaces = \[\]/${repacestr}/" /home/owt/webrtc_agent/agent.toml
 sed -i "/^ip_address = /c \ip_address = \"${externalip}\"" /home/owt/portal/portal.toml

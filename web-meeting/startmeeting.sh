@@ -27,6 +27,6 @@ sed -i "s#_auto_generated_SAMPLE_ID_#${SAMPLESERVID}#" ${CONFIG_HOME}/config.js
 sed -i "s#_auto_generated_SAMPLE_KEY_#${SAMPLESERVKEY}#" ${CONFIG_HOME}/config.js
 #sed -i "s#localhost#${OWTSERVER}#" ${CONFIG_HOME}/config.js
 
-/home/self-sign.sh $(hostname -f) ${CONFIG_HOME}
+/home/self-sign.sh $(hostname -f) ${CONFIG_HOME}/cert
 cd ${CONFIG_HOME}
 node meetingserver.js

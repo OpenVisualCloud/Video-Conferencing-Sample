@@ -143,6 +143,7 @@ function userExit() {
   $("#user-list").empty();
   $('#video-panel').empty();
   localStream = undefined;
+  isAudioOnly = false;
   clearInterval(refreshMute);
 }
 
@@ -1354,7 +1355,7 @@ function playpause() {
 }
 
 function toggleVideo() {
-  if (!localPublication) {
+  if (!localPublication || isAudioOnly) {
     return;
   }
 

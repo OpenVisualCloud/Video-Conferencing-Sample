@@ -39,3 +39,4 @@ Use the following commands to start/stop services via docker swarm:
 ### Launch browser:
 
 Launch your browser and point to `https://localhost` to join the video conference. Note that the default certificates are self-signed with limited lifetime for demo purpose only. Suggest to replace them with your own key pairs with trusted certificates. You may need to confirm the self-signed certificate exception to continue if default certificates are used for demo purpose.  
+Video Conferencing Sample has been tested on following browsers: Chrome 75, firefox 67

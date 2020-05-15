@@ -1,5 +1,5 @@
 language: bash
-dist: xenial
+dist: bionic
 services: docker
 
 addons:

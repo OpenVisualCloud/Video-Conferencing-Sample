@@ -1,4 +1,10 @@
 
+---
+
+### <b>Join Hackathon [Open Your Mind to Endless Possibilities](https://software.seek.intel.com/OpenVisualCloudHackathon-contest)<br>Registration: Jan 11 - March 12, 2021</b>   
+
+---
+
 The video conferencing sample implements a web meeting demo based on Open WebRTC Toolkit (OWT) media server and client SDK, which fully demonstrates OWT media processing features in both mix and forward modes. It also provides basic conferencing actions like screen sharing, instant messaging, and meeting control in web UI.
 
 <img src="web-meeting/app-server/html/img/web-sample.jpg" width="800">

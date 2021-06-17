@@ -1207,7 +1207,7 @@ function changeMode(newMode, enlargeElement) {
       $('#video-panel').removeClass('galaxy lecture')
         .addClass('monitor');
       $('.shrink').removeClass('shrink').addClass('enlarge');
-      // updateMonitor();
+      updateMonitor();
       break;
 
     case MODES.LECTURE:

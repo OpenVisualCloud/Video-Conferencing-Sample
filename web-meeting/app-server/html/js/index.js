@@ -393,9 +393,9 @@ function initConference() {
                 });
               }
             }
-            refreshMuteState();
           });
         }
+        refreshMuteState();
     }, err => {
       console.log("server connect failed: " + err);
       if (err.message.indexOf('connect_error:') >= 0) {

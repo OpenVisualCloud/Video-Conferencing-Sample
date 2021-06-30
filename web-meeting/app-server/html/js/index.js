@@ -185,7 +185,7 @@ function subscribeStream(stream) {
   }
   console.info('subscribing:', stream.id);
   room.subscribe(stream, {video: videoOption, audio: audioOption}).then(subscription => {
-    console.info('subscribed: ',subscription.id);
+    console.info('subscribed: ',subscription.id, stream.id);
     if (videoOption || subscribeType === SUBSCRIBETYPES.MIX) {
       addVideo(stream, false);
     } else {
@@ -379,7 +379,7 @@ function initConference() {
             for (const stream of streams) {
               if (stream.type === 'forward' && stream.id.includes('active-audio')) {
                 remoteStreamMap.get(stream.id).addEventListener('activeaudioinputchange', function(event) {
-                  if (mode === MODES.LECTURE && event.activeAudioInputStreamId.volume === 'major') {
+                  if (event.activeAudioInputStreamId.volume === 'major') {
                     majorAudioInput = event.activeAudioInputStreamId.id;
                     $('#video-panel .largest').removeClass("largest");
                     if (event.activeAudioInputStreamId.id === localPublication.id) {
@@ -1301,6 +1301,10 @@ function updateMonitor() {
       position: "relative",
       right: "auto"
     });
+    console.log('update monitor!!!');
+    $('.client.largest').css("border-color", "blue");
+    $('.client').not('.largest').not('clt-0').css("border-color", "black");
+    $('.client.clt-0').not('.largest').css("border-color", "#7BFF7A");
   }
 }
 
@@ -1311,6 +1315,9 @@ function updateLecture(hasChange) {
     height: $('#video-panel').height(),
     position: "absolute"
   });
+  console.log('update lecture!!!')
+  $('.client.largest').not('clt-0').css("border-color", "black");
+  $('.client.largest.clt-0').css("border-color", "#7BFF7A");
 
   var col = isScreenSharing ? 1 : getColumns();
   var tempTop = 0;

@@ -1301,7 +1301,6 @@ function updateMonitor() {
       position: "relative",
       right: "auto"
     });
-    console.log('update monitor!!!');
     $('.client.largest').css("border-color", "blue");
     $('.client').not('.largest').not('clt-0').css("border-color", "black");
     $('.client.clt-0').not('.largest').css("border-color", "#7BFF7A");
@@ -1315,7 +1314,6 @@ function updateLecture(hasChange) {
     height: $('#video-panel').height(),
     position: "absolute"
   });
-  console.log('update lecture!!!')
   $('.client.largest').not('clt-0').css("border-color", "black");
   $('.client.largest.clt-0').css("border-color", "#7BFF7A");
 

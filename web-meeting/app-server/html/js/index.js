@@ -16,7 +16,7 @@ var MODES = {
   MONITOR: 'monitor',
   LECTURE: 'lecture'
 };
-var mode = MODES.GALAXY;
+var mode = MODES.LECTURE;
 var SUBSCRIBETYPES = {
   FORWARD: 'forward',
   MIX: 'mix'
@@ -57,6 +57,8 @@ var roomId = null;
 
 const remoteStreamMap = new Map();
 const forwardStreamMap = new Map();
+
+let majorAudioInput = '';
 
 function login() {
   const value = $('#login-input').val();
@@ -147,37 +149,60 @@ function userExit() {
   clearInterval(refreshMute);
 }
 
-function processRemoteStream(stream) {
-  remoteStreamMap.set(stream.id, stream);
-  let enedListener = (event) => {
-    console.log(`remote stream ${stream.id} is ended`);
-    remoteStreamMap.delete(stream.id);
-    // destroyStreamUi(stream);
-  };
-  let activeaudioinputchangeListener = (event) => {
-    console.log('activeaudioinputchange event triggered: ', event);
-  };
-  let layoutchangeListener = (event) => {
-    console.log('layoutchange event triggered: ', event);
-  };
-  let update = (event) => {
-    console.log('streamupdate event triggered: ', event, stream.id);
-  }
-  stream.addEventListener('ended', enedListener);
-  stream.addEventListener('activeaudioinputchange', activeaudioinputchangeListener);
-  stream.addEventListener('layoutchange', layoutchangeListener);
-  stream.addEventListener('update', update);
-}
+// function processRemoteStream(stream) {
+//   remoteStreamMap.set(stream.id, stream);
+//   let enedListener = (event) => {
+//     console.log(`remote stream ${stream.id} is ended`);
+//     remoteStreamMap.delete(stream.id);
+//     // destroyStreamUi(stream);
+//   };
+//   let activeaudioinputchangeListener = (event) => {
+//     console.log('activeaudioinputchange event triggered: ', event);
+//   };
+//   let layoutchangeListener = (event) => {
+//     console.log('layoutchange event triggered: ', event);
+//   };
+//   let update = (event) => {
+//     console.log('streamupdate event triggered: ', event, stream.id);
+//   }
+//   stream.addEventListener('ended', enedListener);
+//   stream.addEventListener('activeaudioinputchange', activeaudioinputchangeListener);
+//   stream.addEventListener('layoutchange', layoutchangeListener);
+//   stream.addEventListener('update', update);
+// }
 
 function subscribeStream(stream) {
+  let audioOption;
+  if (subscribeType === SUBSCRIBETYPES.MIX) {
+    audioOption = true;
+    videoOption = !isAudioOnly;
+  } else if (subscribeType === SUBSCRIBETYPES.FORWARD) {
+    audioOption = false;
+    if (stream.id.includes('active-audio-')) {
+      audioOption = !!stream.capabilities.audio;
+    }
+    var videoOption = !isAudioOnly && !audioOption;
+  }
   console.info('subscribing:', stream.id);
-  var videoOption = !isAudioOnly;
-  room.subscribe(stream, {video: videoOption}).then(subscription => {
-    console.info('subscribed: ',subscription.id);
-    addVideo(stream, false);
-    subList[subscription.id] = subscription;
+  room.subscribe(stream, {video: videoOption, audio: audioOption}).then(subscription => {
+    console.info('subscribed: ',subscription.id, stream.id);
+    if (videoOption || subscribeType === SUBSCRIBETYPES.MIX) {
+      addVideo(stream, false);
+    } else {
+      addAudio(stream);
+    }
+    subList[subscription.id] = {'subscription': subscription, 'streamid': stream.id};
     console.info("add success");
     streamObj[stream.id] = stream;
+    if (subscribeType === SUBSCRIBETYPES.FORWARD && mode === MODES.LECTURE && stream.id === majorAudioInput) {
+      $('#video-panel .largest').removeClass("largest");
+      if (majorAudioInput === localPublication.id) {
+        $('#client-' + localStream.id).addClass("largest");
+      } else {
+        $('#client-' + majorAudioInput).addClass("largest");
+      }
+      changeMode(mode);
+    }
     if(stream.source.video === 'mixed'){
       remoteMixedSub = subscription;
     }
@@ -225,7 +250,7 @@ function initConference() {
     $("#galaxy-btn").addClass("disabled");
   } else {
     subscribeType = SUBSCRIBETYPES.FORWARD;
-    mode = MODES.GALAXY;
+    mode = MODES.LECTURE;
     $("#monitor-btn").removeClass("disabled");
     $("#galaxy-btn").removeClass("disabled");
   }
@@ -331,6 +356,7 @@ function initConference() {
         streamObj = {};
 
         for (const stream of streams){
+          remoteStreamMap.set(stream.id, stream);
           if (stream.source.audio === 'mixed' && stream.source.video === 'mixed') {
             console.log("Mix stream id: " + stream.id);
             stream.addEventListener('layoutChanged', function(regions) {
@@ -345,10 +371,30 @@ function initConference() {
           if ((subscribeType === SUBSCRIBETYPES.FORWARD && !isMixStream) ||
               (subscribeType === SUBSCRIBETYPES.MIX && isMixStream) ||
               (stream.source.video === 'screen-cast')) {
-            subscribeStream(stream); 
+            subscribeStream(stream);
           }
         }
-
+        if (subscribeType === SUBSCRIBETYPES.FORWARD) {
+          getStreams(roomId, (streams) => {
+            for (const stream of streams) {
+              if (stream.type === 'forward' && stream.id.includes('active-audio')) {
+                remoteStreamMap.get(stream.id).addEventListener('activeaudioinputchange', function(event) {
+                  if (event.activeAudioInputStreamId.volume === 'major') {
+                    majorAudioInput = event.activeAudioInputStreamId.id;
+                    $('#video-panel .largest').removeClass("largest");
+                    if (event.activeAudioInputStreamId.id === localPublication.id) {
+                      $('#client-' + localStream.id).addClass("largest");
+                    } else {
+                      $('#client-' + event.activeAudioInputStreamId.id).addClass("largest");
+                    }
+                    changeMode(mode);
+                  }
+                  console.log('activeaudioinputchange event triggered: ', event, stream.id);
+                });
+              }
+            }
+          });
+        }
         refreshMuteState();
     }, err => {
       console.log("server connect failed: " + err);
@@ -563,7 +609,7 @@ function addRoomEventListener() {
         $('#text-content').scrollTop($('#text-content').prop('scrollHeight'));
       }
     }
-  }); 
+  });
 }
 
 function shareScreen() {
@@ -674,6 +720,12 @@ function getNextSize() {
   }
 }
 
+function addAudio(stream) {
+  $('#video-panel').append('<div class="active-audio-input" ' + 'id="' + stream.id + '"></div>');
+  $('#' + stream.id).append('<video playsinline autoplay style="display:none"></video>');
+  $('#' + stream.id).find('video').get(0).srcObject = stream.mediaStream;
+}
+
 function addVideo(stream, isLocal) {
   // compute next html id
   //var id = $('#video-panel').children('.client').length;
@@ -698,8 +750,12 @@ function addVideo(stream, isLocal) {
       .children().children('div').remove();
     $('#video-panel .largest').removeClass("largest");
     $('#screen').addClass("largest");
+    // $('#screen').append(
+    //   '<div class="ctrl" id="original"><a href="#" class="ctrl-btn original"></a><a href="#" class="ctrl-btn enlarge"></a><a href="#" class="ctrl-btn ' +
+    //   'fullscreen"></a></div>').append('<div class="ctrl-name">' +
+    //   'Screen Sharing from ' + getUserFromId(stream.origin)["userId"] + '</div>');
     $('#screen').append(
-      '<div class="ctrl" id="original"><a href="#" class="ctrl-btn original"></a><a href="#" class="ctrl-btn enlarge"></a><a href="#" class="ctrl-btn ' +
+      '<div class="ctrl" id="original"><a href="#" class="ctrl-btn original"></a><a href="#" class="ctrl-btn ' +
       'fullscreen"></a></div>').append('<div class="ctrl-name">' +
       'Screen Sharing from ' + getUserFromId(stream.origin)["userId"] + '</div>');
     $('#local-screen').remove();
@@ -812,17 +868,27 @@ function addVideo(stream, isLocal) {
     }
     streamIndices['client-' + id] = stream.id;
 
+    // $('#client-' + id).append('<div class="ctrl">' +
+    //     '<a href="#" class="ctrl-btn ' + resize + '"></a>' +
+    //     '<a href="#" class="ctrl-btn fullscreen"></a>' + muteBtn + '</div>')
+    //   .append('<div class="ctrl-name">' + name + '</div>').append(
+    //     "<div class='noCamera'></div>");
     $('#client-' + id).append('<div class="ctrl">' +
-        '<a href="#" class="ctrl-btn ' + resize + '"></a>' +
         '<a href="#" class="ctrl-btn fullscreen"></a>' + muteBtn + '</div>')
       .append('<div class="ctrl-name">' + name + '</div>').append(
         "<div class='noCamera'></div>");
     stream.addEventListener('ended', function(event) {
+      for (var temp in subList) {
+        if (subList[temp]['streamid'] === stream.id) {
+          delete subList[temp];
+        }
+      }
       console.log("====stream ended:", stream.id);
       $('#client-' + stream.id).remove();
       if (stream.source.video === 'screen-cast') {
         $('#screen-btn').removeClass('disabled');
       }
+      changeMode(mode);
     });
     relocate($('#client-' + id));
     changeMode(mode);
@@ -832,7 +898,7 @@ function addVideo(stream, isLocal) {
     isMouseDown = false;
     mouseX = null;
     mouseY = null;
-    $(this).css('transition', '0.5s');
+    $(this).css('transition', '0s');
   }
   // no animation when dragging
   $('.client').mousedown(function(e) {
@@ -1018,14 +1084,14 @@ function getColor(id) {
   }
 }
 
-function getUserFromName(name) {
-  for (var i = 0; i < users.length; ++i) {
-    if (users[i] && users[i].userId === name) {
-      return users[i];
-    }
-  }
-  return null;
-}
+// function getUserFromName(name) {
+//   for (var i = 0; i < users.length; ++i) {
+//     if (users[i] && users[i].userId === name) {
+//       return users[i];
+//     }
+//   }
+//   return null;
+// }
 
 function getUserFromId(id) {
   for (var i = 0; i < users.length; ++i) {
@@ -1045,7 +1111,7 @@ function deleteUser(id) {
     }
   }
   users.splice(index, 1);
-  $('li').remove(":contains(" + id + ")");  
+  $('li').remove(":contains(" + id + ")");
 }
 
 function toggleMute(id, toMute) {
@@ -1060,7 +1126,7 @@ function toggleMute(id, toMute) {
 
 function getColumns() {
   var col = 1;
-  var cnt = $('#video-panel video').length;
+  var cnt = $('#video-panel video').length - $('#video-panel .active-audio-input').length;
   if (mode === MODES.LECTURE && !isScreenSharing) {
     --cnt;
   }
@@ -1148,8 +1214,8 @@ function changeMode(newMode, enlargeElement) {
       $('#monitor-btn').addClass('selected');
       $('#video-panel').removeClass('galaxy lecture')
         .addClass('monitor');
-      $('.shrink').removeClass('shrink').addClass('enlarge');
-      // updateMonitor();
+      // $('.shrink').removeClass('shrink').addClass('enlarge');
+      updateMonitor();
       break;
 
     case MODES.LECTURE:
@@ -1165,7 +1231,7 @@ function changeMode(newMode, enlargeElement) {
       $('#lecture-btn').addClass('selected');
       $('#video-panel').removeClass('galaxy monitor')
         .addClass('lecture');
-      $('.shrink').removeClass('shrink').addClass('enlarge');
+      // $('.shrink').removeClass('shrink').addClass('enlarge');
       if (typeof enlargeElement !== 'boolean') {
         var largest = enlargeElement || ($('#screen').length > 0 ? $('#screen') :
           ($('.largest').length > 0 ? $('.largest').first() : ($('.large').length >
@@ -1243,6 +1309,9 @@ function updateMonitor() {
       position: "relative",
       right: "auto"
     });
+    $('.client.largest').css("border-color", "blue");
+    $('.client').not('.largest').not('clt-0').css("border-color", "black");
+    $('.client.clt-0').not('.largest').css("border-color", "#7BFF7A");
   }
 }
 
@@ -1253,6 +1322,8 @@ function updateLecture(hasChange) {
     height: $('#video-panel').height(),
     position: "absolute"
   });
+  $('.client.largest').not('clt-0').css("border-color", "black");
+  $('.client.largest.clt-0').css("border-color", "#7BFF7A");
 
   var col = isScreenSharing ? 1 : getColumns();
   var tempTop = 0;
@@ -1304,9 +1375,10 @@ function exitFullScreen(ctrlElement) {
           '<a href="#" class="ctrl-btn enlarge">');
       }
     } else {
-      ctrlElement.find(".shrink").removeClass('shrink').addClass('enlarge');;
-      ctrlElement.find(".unmute").before(
-        '<a href="#" class="ctrl-btn fullscreen">');
+      // ctrlElement.find(".shrink").removeClass('shrink').addClass('enlarge');
+      // ctrlElement.find(".unmute").before(
+      //   '<a href="#" class="ctrl-btn fullscreen">');
+      ctrlElement.find(".shrink").removeClass('shrink').addClass('fullscreen');
     }
     return;
   }
@@ -1325,34 +1397,34 @@ function exitFullScreen(ctrlElement) {
 }
 
 // no use
-function playpause() {
-  var el = event.srcElement;
-  if (el.getAttribute("isPause") != undefined) {
-    el.innerText = "Pause Video";
-    for (var tmp in room.remoteStreams) {
-      var stream = room.remoteStreams[tmp];
-      if (stream.id() !== localStream.id()) {
-        stream.playVideo();
-      } else {
-        localStream.enableVideo();
-      }
-    }
-    $(".noCamera").hide();
-    el.removeAttribute("isPause");
-  } else {
-    el.innerText = "Play Video";
-    for (var tmp in room.remoteStreams) {
-      var stream = room.remoteStreams[tmp];
-      if (stream.id() !== localStream.id()) {
-        stream.pauseVideo();
-      } else {
-        localStream.disableVideo();
-      }
-    }
-    $(".noCamera").show();
-    el.setAttribute("isPause", "");
-  }
-}
+// function playpause() {
+//   var el = event.srcElement;
+//   if (el.getAttribute("isPause") != undefined) {
+//     el.innerText = "Pause Video";
+//     for (var tmp in room.remoteStreams) {
+//       var stream = room.remoteStreams[tmp];
+//       if (stream.id() !== localStream.id()) {
+//         stream.playVideo();
+//       } else {
+//         localStream.enableVideo();
+//       }
+//     }
+//     $(".noCamera").hide();
+//     el.removeAttribute("isPause");
+//   } else {
+//     el.innerText = "Play Video";
+//     for (var tmp in room.remoteStreams) {
+//       var stream = room.remoteStreams[tmp];
+//       if (stream.id() !== localStream.id()) {
+//         stream.pauseVideo();
+//       } else {
+//         localStream.disableVideo();
+//       }
+//     }
+//     $(".noCamera").show();
+//     el.setAttribute("isPause", "");
+//   }
+// }
 
 function toggleVideo() {
   if (!localPublication || isAudioOnly) {
@@ -1363,10 +1435,10 @@ function toggleVideo() {
     //TODO: pause all video?
      //remoteMixedSub.mute(Owt.Base.TrackKind.VIDEO);
     for (var temp in subList) {
-      if (subList[temp] === screenSub) {
+      if (subList[temp]['subscription'] === screenSub || subList[temp]['streamid'].includes('active-audio-')) {
         continue;
       }
-      subList[temp].mute(Owt.Base.TrackKind.VIDEO)
+      subList[temp]['subscription'].mute(Owt.Base.TrackKind.VIDEO);
     }
     $('[ismix=true]').children('.video').css('display', 'none');
     $('[ismix=true]').children('.pause').css('display', 'block');
@@ -1389,10 +1461,10 @@ function toggleVideo() {
     $('[ismix=true]').children('.pause').css('display', 'none');
      //remoteMixedSub.unmute(Owt.Base.TrackKind.VIDEO);
     for (var temp in subList) {
-      if (subList[temp] === screenSub) {
+      if (subList[temp]['subscription'] === screenSub || subList[temp]['streamid'].includes('active-audio-')) {
         continue;
       }
-      subList[temp].unmute(Owt.Base.TrackKind.VIDEO)
+      subList[temp]['subscription'].unmute(Owt.Base.TrackKind.VIDEO)
     }
     localStream.mediaStream.getVideoTracks()[0].enabled = true;
     localPublication.unmute(Owt.Base.TrackKind.VIDEO).then(
@@ -1492,6 +1564,7 @@ $(document).ready(function() {
   $(document).on('click', '.shrink', function() {
     exitFullScreen($(this).parent());
     $(this).parent().parent().children('.player').trigger('resizeVideo');
+    changeMode(mode);
     setTimeout(resizeStream, 500, mode);
   });
 

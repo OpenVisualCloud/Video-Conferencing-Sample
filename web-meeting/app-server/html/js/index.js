@@ -750,8 +750,12 @@ function addVideo(stream, isLocal) {
       .children().children('div').remove();
     $('#video-panel .largest').removeClass("largest");
     $('#screen').addClass("largest");
+    // $('#screen').append(
+    //   '<div class="ctrl" id="original"><a href="#" class="ctrl-btn original"></a><a href="#" class="ctrl-btn enlarge"></a><a href="#" class="ctrl-btn ' +
+    //   'fullscreen"></a></div>').append('<div class="ctrl-name">' +
+    //   'Screen Sharing from ' + getUserFromId(stream.origin)["userId"] + '</div>');
     $('#screen').append(
-      '<div class="ctrl" id="original"><a href="#" class="ctrl-btn original"></a><a href="#" class="ctrl-btn enlarge"></a><a href="#" class="ctrl-btn ' +
+      '<div class="ctrl" id="original"><a href="#" class="ctrl-btn original"></a><a href="#" class="ctrl-btn ' +
       'fullscreen"></a></div>').append('<div class="ctrl-name">' +
       'Screen Sharing from ' + getUserFromId(stream.origin)["userId"] + '</div>');
     $('#local-screen').remove();
@@ -864,8 +868,12 @@ function addVideo(stream, isLocal) {
     }
     streamIndices['client-' + id] = stream.id;
 
+    // $('#client-' + id).append('<div class="ctrl">' +
+    //     '<a href="#" class="ctrl-btn ' + resize + '"></a>' +
+    //     '<a href="#" class="ctrl-btn fullscreen"></a>' + muteBtn + '</div>')
+    //   .append('<div class="ctrl-name">' + name + '</div>').append(
+    //     "<div class='noCamera'></div>");
     $('#client-' + id).append('<div class="ctrl">' +
-        '<a href="#" class="ctrl-btn ' + resize + '"></a>' +
         '<a href="#" class="ctrl-btn fullscreen"></a>' + muteBtn + '</div>')
       .append('<div class="ctrl-name">' + name + '</div>').append(
         "<div class='noCamera'></div>");
@@ -1206,7 +1214,7 @@ function changeMode(newMode, enlargeElement) {
       $('#monitor-btn').addClass('selected');
       $('#video-panel').removeClass('galaxy lecture')
         .addClass('monitor');
-      $('.shrink').removeClass('shrink').addClass('enlarge');
+      // $('.shrink').removeClass('shrink').addClass('enlarge');
       updateMonitor();
       break;
 
@@ -1223,7 +1231,7 @@ function changeMode(newMode, enlargeElement) {
       $('#lecture-btn').addClass('selected');
       $('#video-panel').removeClass('galaxy monitor')
         .addClass('lecture');
-      $('.shrink').removeClass('shrink').addClass('enlarge');
+      // $('.shrink').removeClass('shrink').addClass('enlarge');
       if (typeof enlargeElement !== 'boolean') {
         var largest = enlargeElement || ($('#screen').length > 0 ? $('#screen') :
           ($('.largest').length > 0 ? $('.largest').first() : ($('.large').length >
@@ -1367,9 +1375,10 @@ function exitFullScreen(ctrlElement) {
           '<a href="#" class="ctrl-btn enlarge">');
       }
     } else {
-      ctrlElement.find(".shrink").removeClass('shrink').addClass('enlarge');;
-      ctrlElement.find(".unmute").before(
-        '<a href="#" class="ctrl-btn fullscreen">');
+      // ctrlElement.find(".shrink").removeClass('shrink').addClass('enlarge');
+      // ctrlElement.find(".unmute").before(
+      //   '<a href="#" class="ctrl-btn fullscreen">');
+      ctrlElement.find(".shrink").removeClass('shrink').addClass('fullscreen');
     }
     return;
   }
@@ -1555,6 +1564,7 @@ $(document).ready(function() {
   $(document).on('click', '.shrink', function() {
     exitFullScreen($(this).parent());
     $(this).parent().parent().children('.player').trigger('resizeVideo');
+    changeMode(mode);
     setTimeout(resizeStream, 500, mode);
   });
 

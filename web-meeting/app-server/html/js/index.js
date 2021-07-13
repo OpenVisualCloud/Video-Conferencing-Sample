@@ -906,7 +906,7 @@ function addVideo(stream, isLocal) {
     isMouseDown = false;
     mouseX = null;
     mouseY = null;
-    $(this).css('transition', '0.5s');
+    $(this).css('transition', '0s');
   }
   // no animation when dragging
   $('.client').mousedown(function(e) {

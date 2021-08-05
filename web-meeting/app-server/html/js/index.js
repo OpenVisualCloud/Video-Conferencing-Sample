@@ -378,18 +378,26 @@ function initConference() {
           getStreams(roomId, (streams) => {
             for (const stream of streams) {
               if (stream.type === 'forward' && stream.id.includes('active-audio')) {
+                let triggerTimeout = undefined;
                 remoteStreamMap.get(stream.id).addEventListener('activeaudioinputchange', function(event) {
-                  if (event.activeAudioInputStreamId.volume === 'major') {
-                    majorAudioInput = event.activeAudioInputStreamId.id;
-                    $('#video-panel .largest').removeClass("largest");
-                    if (event.activeAudioInputStreamId.id === localPublication.id) {
-                      $('#client-' + localStream.id).addClass("largest");
-                    } else {
-                      $('#client-' + event.activeAudioInputStreamId.id).addClass("largest");
-                    }
-                    changeMode(mode);
-                  }
                   console.log('activeaudioinputchange event triggered: ', event, stream.id);
+                  if (triggerTimeout) {
+                    clearTimeout(triggerTimeout);
+                    triggerTimeout = undefined;
+                  }
+                  triggerTimeout = setTimeout(function(){
+                    if (event.activeAudioInputStreamId.volume === 'major') {
+                      majorAudioInput = event.activeAudioInputStreamId.id;
+                      $('#video-panel .largest').removeClass("largest");
+                      if (event.activeAudioInputStreamId.id === localPublication.id) {
+                        $('#client-' + localStream.id).addClass("largest");
+                      } else {
+                        $('#client-' + event.activeAudioInputStreamId.id).addClass("largest");
+                      }
+                      triggerTimeout = undefined;
+                      changeMode(mode);
+                    }
+                  }, 1000);                
                 });
               }
             }

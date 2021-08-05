@@ -397,7 +397,7 @@ function initConference() {
                       triggerTimeout = undefined;
                       changeMode(mode);
                     }
-                  }, 1000);
+                  }, 1000);                
                 });
               }
             }

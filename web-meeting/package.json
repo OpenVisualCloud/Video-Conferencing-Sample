@@ -2,8 +2,7 @@
   "name": "OWT-MCU-SAMPLE",
   "version": "4.2.1",
   "dependencies": {
-    "mongojs": "",
-    "mongoose": "^5.9.6"
+    "mongojs": ""
   },
   "engine": {
     "node": "8.15.0"
